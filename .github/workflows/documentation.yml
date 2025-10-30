@@ -1,55 +1,26 @@
-name: Docs Deploy
+name: Documentation Deployment
 
-# Triggers
 on:
   push:
+    branches: [ main ]
     paths:
       - 'docs/**'
-      - '.github/workflows/documentation.yml'
-  workflow_dispatch: {}  # Manual trigger
-
-# Global permissions (CRITICAL for gh-pages push)
-permissions:
-  contents: write      # Allows pushing to gh-pages branch
-  pages: write         # Allows GitHub Pages deployment
-  id-token: write      # For future-proofing
 
 jobs:
-  build-and-publish-docs:
+  deploy-docs:
     runs-on: ubuntu-latest
+
     steps:
-      # 1. Checkout code
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for clean gh-pages
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      # 2. Setup Node.js
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+    - name: Build Docs
+      run: |
+        npm install -g docsify-cli
+        docsify init ./docs
 
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # 4. Build docs (optional)
-      - name: Build documentation
-        run: |
-          if npm run | grep -q "^  builddocs$"; then
-            echo "Running custom builddocs script..."
-            npm run builddocs
-          else
-            echo "No builddocs script found. Publishing raw docs/ folder."
-          fi
-
-      # 5. Deploy to GitHub Pages (FIXED!)
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          allow_empty_commit: true
-          force_orphan: true
-          commit_message: "Deploy docs: ${{ github.sha }}"
-          enable_jekyll: false
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
