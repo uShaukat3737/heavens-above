@@ -8,7 +8,8 @@
     "start": "node run.js",
     "build": "echo 'No build step required.'",
     "test": "echo 'No tests defined.' && exit 0",
-    "lint": "echo 'No linting configured.'"
+    "lint": "echo 'No linting configured.'",
+    "builddocs": "echo 'No documentation build step required. Deploying docs/ as-is.'"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
