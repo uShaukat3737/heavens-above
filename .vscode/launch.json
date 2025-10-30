@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/Salsa-Suace/Downloads/heavens-above",
+      "program": "/Users/Salsa-Suace/Downloads/heavens-above/build/Debug/outDebug"
+    }
+  ]
+}

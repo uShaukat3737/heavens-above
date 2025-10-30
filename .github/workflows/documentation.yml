@@ -1,0 +1,35 @@
+name: Docs Deploy
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - '.github/workflows/documentation.yml'
+  workflow_dispatch: {}
+
+jobs:
+  build-and-publish-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install
+        run: npm ci
+
+      - name: Build docs (if you use a static doc generator e.g. mkdocs or docz)
+        run: |
+          if [ -f package.json ] && jq -r '.scripts.builddocs' package.json >/dev/null 2>&1; then
+            npm run builddocs
+          else
+            echo "No docs build step defined. Publishing docs/ directory directly."
+          fi
+
+      - name: Deploy docs to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs

@@ -1,0 +1,44 @@
+name: Scheduled Scraper
+
+on:
+  schedule:
+    # daily at 01:00 UTC — adjust cron to your needs (example daily)
+    - cron: '0 1 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo (with token for push)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run scraper
+        run: node run.js
+        env:
+          TZ: UTC
+
+      - name: Commit and push scraped data (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add public/data || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(scrape): scheduled update [skip ci]"
+            git push origin HEAD:main
+          fi

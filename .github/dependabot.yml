@@ -1,0 +1,9 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    # allow auto-merge only for patch or minor if tests pass (adjust policy by code owners)
+    # Optionally ignore or allow version ranges

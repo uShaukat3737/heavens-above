@@ -1,0 +1,44 @@
+name: Generate Release Notes
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+jobs:
+  generate-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate simple changelog (PR titles since last tag)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=${{ github.event.release.tag_name || 'manual' }}
+          echo "Generating release notes for $TAG"
+          # Use GitHub API to list merged PRs since last tag (simple approach)
+          gh auth setup-git || true
+          if ! command -v gh >/dev/null; then
+            curl -fsSL https://github.com/cli/cli/releases/latest/download/gh_2.35.0_linux_amd64.tar.gz -o /tmp/gh.tar.gz
+            tar -xzf /tmp/gh.tar.gz -C /tmp
+            sudo cp /tmp/gh_*/bin/gh /usr/local/bin/gh
+          fi
+          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          LAST_TAG=$(git describe --tags --abbrev=0 || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            echo "Last tag: $LAST_TAG"
+            PRS=$(gh pr list --search "merged:>=$LAST_TAG" --state merged --json title,number,author --limit 100) || true
+          else
+            PRS=$(gh pr list --state merged --json title,number,author --limit 100) || true
+          fi
+          echo "## Release notes for $TAG" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "$PRS" | jq -r '.[] | "- PR #\(.number): \(.title) (by \(.author.login))"' >> RELEASE_NOTES.md || true
+
+      - name: Upload release notes artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md

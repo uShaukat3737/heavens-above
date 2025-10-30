@@ -5,7 +5,9 @@
   "description": "Scripts for scraping the Heavens Above website.",
   "main": "run.js",
   "scripts": {
-    "start": "node run.js"
+    "start": "node run.js",
+    "build": "echo 'No build step required.'",
+    "test": "echo 'No tests defined.' && exit 0"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
@@ -13,18 +15,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PKUPI/heavens-above.git"
+    "url": "git+https://github.com/uShaukat3737/heavens-above.git"
   },
   "keywords": [
     "Heavens Above",
-    "spider"
+    "scraper",
+    "node"
   ],
-  "author": "Mimi <stevenjoezhang@gmail.com> (https://zhangshuqiao.org)",
+  "author": "uShaukat3737",
   "license": "GPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/PKUPI/heavens-above/issues"
+    "url": "https://github.com/uShaukat3737/heavens-above/issues"
   },
-  "homepage": "https://github.com/PKUPI/heavens-above#readme",
+  "homepage": "https://github.com/uShaukat3737/heavens-above#readme",
   "engines": {
     "node": ">=12.10.0"
   }

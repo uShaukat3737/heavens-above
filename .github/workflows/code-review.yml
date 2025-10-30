@@ -1,0 +1,40 @@
+name: PR checks (Lint, Tests, Audit)
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pr-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Run ESLint (fail on warnings)
+        run: |
+          npx eslint . --ext .js || exit 1
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run npm audit (fail on high)
+        run: |
+          npm audit --json > audit.json || true
+          node -e "
+const fs=require('fs');
+const d=JSON.parse(fs.readFileSync('audit.json','utf8')||'{}');
+if(d.vulnerabilities){
+  const high = Object.values(d.vulnerabilities).filter(v=>v.severity==='high' || v.severity==='critical');
+  if(high.length>0){ console.error('High/Critical vulnerabilities found'); process.exit(2) }
+}
+console.log('No high/critical vulnerabilities found');"

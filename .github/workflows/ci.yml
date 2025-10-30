@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  install-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: |
+          if npm run -s lint --silent; then
+            echo "Lint succeeded"
+          else
+            echo "Lint failed" && exit 1
+          fi
+        # assumes "lint" script exists in package.json; otherwise adjust
+
+      - name: Run tests
+        run: |
+          if npm test --silent; then
+            echo "Tests passed"
+          else
+            echo "Tests failed" && exit 1
+          fi
+
+      - name: Security audit (npm audit)
+        run: |
+          npm audit --json > audit.json || true
+          cat audit.json | jq -r '.metadata | "found \(.vulnerabilities | to_entries | length) categories"' || true
+        continue-on-error: true
+
+      - name: Upload test results (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: |
+            audit.json
+            coverage || coverage/** || /dev/null

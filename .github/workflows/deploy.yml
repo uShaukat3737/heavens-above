@@ -1,0 +1,53 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install
+        run: npm ci
+
+      - name: Build (optional)
+        run: |
+          if npm run -s build --silent; then
+            echo "Built with npm run build"
+          else
+            echo "No build step or build failed; proceeding to publish public/ (if present)"
+          fi
+        continue-on-error: true
+
+      - name: Ensure public directory exists
+        run: |
+          if [ ! -d public ]; then
+            echo "No public/ directory — create or adjust workflow to point to built assets."
+            ls -la
+            exit 1
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: public
+
+      - name: Publish
+        uses: actions/deploy-pages@v1
