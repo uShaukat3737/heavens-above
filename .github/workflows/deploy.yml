@@ -5,41 +5,36 @@ on:
     branches: [ main ]
     paths:
       - 'docs/**'
-      
+  workflow_dispatch:
+
 permissions:
   contents: write
   pages: write
   id-token: write
-  
+
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Set up Node (optional, but caches npm)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
-      # 3. Install dependencies (works even without package-lock.json)
       - name: Install dependencies
         run: npm install
 
-      # 4. Build Docs – install docsify-cli + init
       - name: Build Docs
         run: |
           npm install -g docsify-cli
           docsify init ./docs --theme vue
 
-      # 5. Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
