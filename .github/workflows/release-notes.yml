@@ -1,10 +1,9 @@
 name: Generate Release Notes
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'    # Triggers when a new semver tag is pushed
-  workflow_dispatch: {}  # Manual trigger
+  release:
+    types: [published]  # triggers when a release is published on GitHub
+  workflow_dispatch: {}
 
 jobs:
   release-notes:
