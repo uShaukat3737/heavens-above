@@ -1,42 +1,36 @@
 name: Generate Release Notes
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*.*.*'    # Triggers when a new semver tag is pushed
+  workflow_dispatch: {}  # Manual trigger
 
 jobs:
-  generate-notes:
+  release-notes:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      # Step 1: Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up GitHub CLI
-        uses: cli/gh-actions@v2
+      # Step 2: Generate release notes from last 10 commits
+      - name: Generate release notes
+        id: notes
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { execSync } = require('child_process');
+            // Get last 10 commits formatted as "- message (author)"
+            const log = execSync('git log -10 --pretty=format:"- %s (%an)"').toString();
+            core.setOutput("notes", `### Recent Changes\n${log}`);
 
-      - name: Generate simple changelog (PR titles since last tag)
-        run: |
-          TAG=${{ github.event.release.tag_name || 'manual' }}
-          echo "Generating release notes for $TAG"
-
-          # Get last tag
-          LAST_TAG=$(git describe --tags --abbrev=0 || echo "")
-          if [ -n "$LAST_TAG" ]; then
-            echo "Last tag: $LAST_TAG"
-            PRS=$(gh pr list --search "merged:>=$LAST_TAG" --state merged --json title,number,author --limit 100) || true
-          else
-            PRS=$(gh pr list --state merged --json title,number,author --limit 100) || true
-          fi
-
-          echo "## Release notes for $TAG" > RELEASE_NOTES.md
-          echo "" >> RELEASE_NOTES.md
-          echo "$PRS" | jq -r '.[] | "- PR #\(.number): \(.title) (by \(.author.login))"' >> RELEASE_NOTES.md || true
-
-      - name: Upload release notes artifact
-        uses: actions/upload-artifact@v4
+      # Step 3: Create or update GitHub release with the notes
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: release-notes
-          path: RELEASE_NOTES.md
+          body: ${{ steps.notes.outputs.notes }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
