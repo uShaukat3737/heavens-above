@@ -12,6 +12,7 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,10 +22,10 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build (optional)
+      - name: Build project (optional)
         run: |
           if npm run -s build --silent; then
             echo "Built with npm run build"
@@ -36,18 +37,18 @@ jobs:
       - name: Ensure public directory exists
         run: |
           if [ ! -d public ]; then
-            echo "No public/ directory — create or adjust workflow to point to built assets."
+            echo "No public/ directory — please create it or adjust workflow to point to built assets."
             ls -la
             exit 1
           fi
 
-      - name: Deploy to GitHub Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact to GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
-      - name: Publish
-        uses: actions/deploy-pages@v1
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
