@@ -1,11 +1,9 @@
-name: Docs Deploy
+
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'docs/**'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -13,33 +11,44 @@ permissions:
   id-token: write
 
 jobs:
-  deploy-docs:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Node.js
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build Docs
+      - name: Build project (optional)
         run: |
-          npm install -g docsify-cli
-          docsify init ./docs --theme vue
+          if npm run -s build --silent; then
+            echo "Built with npm run build"
+          else
+            echo "No build step or build failed; proceeding to publish public/ (if present)"
+          fi
+        continue-on-error: true
+
+      - name: Ensure public directory exists
+        run: |
+          if [ ! -d public ]; then
+            echo "No public/ directory — please create it or adjust workflow to point to built assets."
+            ls -la
+            exit 1
+          fi
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          allow_empty_commit: true
-          force_orphan: true
-          commit_message: "Deploy docs – ${{ github.sha }}"
+        uses: actions/deploy-pages@v4
