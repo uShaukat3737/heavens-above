@@ -23,7 +23,7 @@ jobs:
 
       - name: Run ESLint (code style check)
         run: |
-          npx eslint . || echo "⚠️ ESLint found issues but continuing."
+          npx eslint . || echo " ESLint found issues but continuing."
 
       - name: Security Scan
         uses: snyk/actions/node@master
@@ -33,5 +33,5 @@ jobs:
 
       - name: Code Quality Summary
         run: |
-          echo "✅ Code review checks completed."
+          echo " Code review checks completed."
           echo "You can view details in the Actions log."
