@@ -1,35 +1,55 @@
 name: Docs Deploy
 
+# Triggers
 on:
   push:
     paths:
       - 'docs/**'
       - '.github/workflows/documentation.yml'
-  workflow_dispatch: {}
+  workflow_dispatch: {}  # Manual trigger
+
+# Global permissions (CRITICAL for gh-pages push)
+permissions:
+  contents: write      # Allows pushing to gh-pages branch
+  pages: write         # Allows GitHub Pages deployment
+  id-token: write      # For future-proofing
 
 jobs:
   build-and-publish-docs:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout code
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for clean gh-pages
 
+      # 2. Setup Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
-      - name: Install
-        run: npm install
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Build docs (if you use a static doc generator e.g. mkdocs or docz)
+      # 4. Build docs (optional)
+      - name: Build documentation
         run: |
-          if [ -f package.json ] && jq -r '.scripts.builddocs' package.json >/dev/null 2>&1; then
+          if npm run | grep -q "^  builddocs$"; then
+            echo "Running custom builddocs script..."
             npm run builddocs
           else
-            echo "No docs build step defined. Publishing docs/ directory directly."
+            echo "No builddocs script found. Publishing raw docs/ folder."
           fi
 
-      - name: Deploy docs to GitHub Pages
+      # 5. Deploy to GitHub Pages (FIXED!)
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
+          allow_empty_commit: true
+          force_orphan: true
+          commit_message: "Deploy docs: ${{ github.sha }}"
+          enable_jekyll: false
