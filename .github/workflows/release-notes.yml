@@ -5,6 +5,10 @@ on:
     types: [published]  # triggers when a release is published on GitHub
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+  releases: write
+  
 jobs:
   release-notes:
     runs-on: ubuntu-latest
