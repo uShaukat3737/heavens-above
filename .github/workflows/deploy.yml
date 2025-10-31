@@ -1,5 +1,5 @@
 # .github/workflows/deploy.yml
-name: Deploy to Vercel (Node 18)
+name: Deploy to Vercel
 
 on:
   push:
@@ -9,25 +9,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 18
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Scrape latest data
-        run: node run.js
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - run: npm install
+      - run: node run.js
+      - uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           working-directory: ./public
-          vercel-args: '--prod'
+          vercel-args: '--prod --yes'
