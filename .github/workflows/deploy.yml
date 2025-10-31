@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to Vercel
 
 on:
@@ -9,26 +8,20 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build project (optional)
-        run: |
-          if [ -f package.json ]; then
-            npm run build || echo "No build step found"
-          fi
+      - run: npm install
+      - run: node run.js
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./public
           prod: true
