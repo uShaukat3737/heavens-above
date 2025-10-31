@@ -1,5 +1,5 @@
 # .github/workflows/deploy.yml
-name: Deploy to Vercel (Cloud)
+name: Deploy to Vercel (Hobby)
 
 on:
   push:
@@ -9,10 +9,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -21,20 +20,16 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install deps
         run: npm ci
 
-      - name: Scrape Latest Satellite Data
+      - name: Scrape fresh data
         run: node run.js
-        env:
-          SCRAPER_KEY: ${{ secrets.SCRAPER_KEY }}  # Optional
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}           # Your token here
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}         # Optional
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # Optional
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}   
           working-directory: ./public
           vercel-args: '--prod'
           alias-domains: |
