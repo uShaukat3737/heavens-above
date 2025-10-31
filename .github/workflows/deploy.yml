@@ -1,5 +1,5 @@
 # .github/workflows/deploy.yml
-name: Deploy to Vercel (Node 18 Safe)
+name: Deploy to Vercel (Node 18 – Non-interactive)
 
 on:
   push:
@@ -18,23 +18,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          #cache: 'npm'
+          cache: 'npm'
 
-      - name: Install deps (with undici override)
-        run: |
-          npm install
-          # Verify undici version
-          echo "undici version:"
-          npm list undici | grep undici
+      - name: Install dependencies
+        run: npm install
 
-      - name: Scrape fresh data
+      - name: Scrape latest data
         run: node run.js
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+        uses: vercel/action@v1
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           working-directory: ./public
-          vercel-args: '--prod'
-          alias-domains: |
-            heavens-above.ushaukat3737.com
+          production: true
