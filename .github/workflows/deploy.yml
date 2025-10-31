@@ -9,15 +9,26 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm install
-      - run: node run.js
-      - uses: amondnet/vercel-action@v25
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project (optional)
+        run: |
+          if [ -f package.json ]; then
+            npm run build || echo "No build step found"
+          fi
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           working-directory: ./public
-          production: true
+          prod: true
