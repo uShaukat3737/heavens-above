@@ -20,4 +20,4 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           working-directory: ./public
-          vercel-args: '--prod --yes'
+          production: true
