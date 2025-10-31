@@ -1,4 +1,5 @@
-name: Deploy to Railway
+# .github/workflows/deploy.yml
+name: Deploy to Vercel (Cloud)
 
 on:
   push:
@@ -8,24 +9,33 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '18'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: Test build (optional)
-        run: node -v && npm run build || echo "No build step — continuing"
+      - name: Scrape Latest Satellite Data
+        run: node run.js
+        env:
+          SCRAPER_KEY: ${{ secrets.SCRAPER_KEY }}  # Optional
 
-      - name: Deploy to Railway
-        uses: railwayapp/railway-action@v1
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
         with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          service: 'heavens-above'
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}           # Your token here
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}         # Optional
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # Optional
+          working-directory: ./public
+          vercel-args: '--prod'
+          alias-domains: |
+            heavens-above.ushaukat3737.com
