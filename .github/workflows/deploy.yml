@@ -1,54 +1,31 @@
-
-name: Deploy to GitHub Pages
+name: Deploy to Railway
 
 on:
   push:
     branches: [ main ]
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project (optional)
-        run: |
-          if npm run -s build --silent; then
-            echo "Built with npm run build"
-          else
-            echo "No build step or build failed; proceeding to publish public/ (if present)"
-          fi
-        continue-on-error: true
+      - name: Test build (optional)
+        run: node -v && npm run build || echo "No build step — continuing"
 
-      - name: Ensure public directory exists
-        run: |
-          if [ ! -d public ]; then
-            echo "No public/ directory — please create it or adjust workflow to point to built assets."
-            ls -la
-            exit 1
-          fi
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to Railway
+        uses: railwayapp/railway-action@v1
         with:
-          path: public
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+          service: 'heavens-above'
