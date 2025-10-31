@@ -32,7 +32,7 @@
   "homepage": "https://github.com/uShaukat3737/heavens-above#readme",
   "engines": {
     "node": ">=12.10.0"
-  }
+  },
   "overrides": {
     "undici": "5.28.4"
   }
